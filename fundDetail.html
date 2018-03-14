@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0" />
+    <title>基金详情</title>
+    <script type="text/javascript" src="js/flexible.mini.js"></script>
+    <link rel="stylesheet" type="text/css" href="css/base.css" />
+    <link href="css/style.css" type="text/css" rel="stylesheet">
+    <!--<link rel="stylesheet" href="./css/fundDetail.css">-->
+    <!-- 引入 echarts.js -->
+    <script src="./js/echarts.common.min.js"></script>
+</head>
+
+<body>
+    <div class="fund_type">
+        <!--风险-->
+        <span class='title'><span></span></span>
+        <!--类型-->
+        <span class='val'><span></span></span>
+    </div>
+    <div class="fund_state">
+        <!--七日年化-->
+        <div class="fund_day">
+            <span class='title'>七日年化</span>
+            <span class='val'></span>
+        </div>
+        <div class="xian"></div>
+        <div class="fund_net">
+             <span class='title'>单位净值</span>
+            <span class='val'></span>
+        </div>
+    </div>
+    <div class="tab-contain">
+       <div class="fundShadow">
+           <!-- tab栏 -->
+           <ul id="tabs">
+               <li class="current" id="firstList"><b></b><a href="#" title="tab1">七日年化</a></li>
+               <li><b></b><a href="#" title="tab2">万份收益</a></li>
+           </ul>
+           <!-- 对应显示内容 -->
+           <div id="content">
+               <div id="tab1" class="item show">
+                   <div class="header">
+                    <span class='item1'>
+                        <b>·</b> <i>本基金</i>
+                    </span>
+                    <!--<span class='item2'>-->
+                        <!--<b>·</b> <i>同类均值：</i>+1.8%-->
+                    <!--</span>-->
+                       <!--<span class='item3'>-->
+                        <!--<b>·</b> <i>沪深300：</i>+2.8%-->
+                    <!--</span>-->
+                   </div>
+                   <!-- 为ECharts准备一个具备大小（宽高）的Dom -->
+                   <div id="main" style="width: 95%;height:4rem;margin-left:2%;"></div>
+                   <div class="main_timeX">
+                       <span class='first'></span>
+                       <span class='center'></span>
+                       <span class='last'></span>
+                   </div>
+                   <div class="main_time">
+                       <span class='stage1 cur' name='1'>近一个月</span>
+                       <span class='stage2' name='3'>近三个月</span>
+                       <span class='stage3' name='4'>近六个月</span>
+                       <span class='stage4' name='12'>近一年</span>
+                       <!--<span class='stage5' name='36'>近三年</span>-->
+                   </div>
+               </div>
+               <div id="tab2" class="item">
+                   <div class="header reckonHeader">
+                    <span class='item1'>
+                        <i>日期：</i><span class='valTime'>01-24</span>
+                    </span>
+                   </div>
+                   <!-- 为ECharts准备一个具备大小（宽高）的Dom -->
+                   <div id="main2" style="width: 95%;height:4rem;margin-left:2%;"></div>
+                   <div class="main_timeX">
+                       <span class='first'></span>
+                       <span class='center'></span>
+                       <span class='last'></span>
+                   </div>
+                   <div class="main_time">
+                       <span class='stage1 cur' name='1'>近一个月</span>
+                       <span class='stage2' name='3'>近三个月</span>
+                       <span class='stage3' name='4'>近六个月</span>
+                       <span class='stage4' name='12'>近一年</span>
+                       <!--<span class='stage5' name='36'>近三年</span>-->
+                   </div>
+
+               </div>
+           </div>
+           <!--loading-->
+           <div class="loading">
+               <div id="foo" style="width: 20vw;height: 20vw;position: absolute;left: 35%;top: 35%;">
+               </div>
+           </div>
+
+       </div>
+    </div>
+    <div class="fund_msg">
+        <div class="fund_msg_box">
+            <span class='left_title'>基金信息</span>
+            <span class='right_val'><img src="./images/right.png" alt=""></span>
+        </div>
+
+    </div>
+    <div class="fund_manager">
+        <div class="fund_manager_box">
+            <span class='left_title'>基金经理</span>
+            <span class='right_val'><img src="./images/right.png" alt=""></span>
+        </div>
+
+    </div>
+    <div class="BuyBtn">
+        <div class="trueBtn"></div>
+        <div class="buyAtOnec">立即买入</div>
+    </div>
+
+
+</body>
+
+</html>
+<script type="text/javascript" src="./js/spin.min.js"></script>
+<script type="text/javascript" src="./js/jquery.min.js"></script>
+<script type="text/javascript" src="js/mychart.js"></script>
+<script type="text/javascript" src="./js/url.js"></script>
+<script type="text/javascript" src="js/time.js"></script>
+<script type="text/javascript" src="./js/static.js"></script>
+<script type="text/javascript">
+
+    //获取链接后的值
+    function GetRequest() {
+
+        var url = location.search; //获取url中"?"符后的字串
+        var theRequest = new Object();
+        if (url.indexOf("?") != -1) {
+            var str = url.substr(1);
+            strs = str.split("&");
+            for (var i = 0; i < strs.length; i++) {
+                theRequest[strs[i].split("=")[0]] = (strs[i].split("=")[1]);
+            }
+        }
+        return theRequest;
+    }
+
+
+    //获取链接后面的值
+    var Request = new Object();
+
+    Request = GetRequest();
+
+    //基金代码
+    var fundCode = Request["fundCode"];
+
+
+
+
+    //判断终端信息，安卓，ios
+    var u = navigator.userAgent;
+    var isAndroid = u.indexOf('Android') > -1 || u.indexOf('Adr') > -1; //android终端
+    var isIOS = !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/); //ios终端
+
+    //走势图，加载loading
+    var opts = {
+        lines: 9, // loading小块的数量
+        length: 1, // 小块的长度
+        width: 3, // 小块的宽度
+        radius: 5, // 整个圆形的半径
+        corners: 1, // 小块的圆角，越大则越圆
+        rotate: 0, // loading动画的旋转度数，貌似没什么实际作用
+        color: '#ccc', // 颜色
+        speed: 1, // 变换速度
+        trail: 60, // 余晖的百分比
+        shadow: false, // 是否渲染出阴影
+        hwaccel: false, // 是否启用硬件加速
+        className: 'spinner', // 给loading添加的css样式名
+        zIndex: 2e9, // The z-index (defaults to 2000000000)
+        top: 'auto', // Top position relative to parent in px
+        left: 'auto' // Left position relative to parent in px
+    };
+    var target = document.getElementById('foo');
+    var spinner = new Spinner(opts).spin(target);
+
+    //loading,800毫秒，
+    $('.loading').css('display','block')
+    setTimeout(function () {
+        $('.loading').css('display','none')
+    },800)
+
+    //基金信息-点击
+    $('.fund_msg_box').click(function(){
+
+        if(isAndroid==true){
+
+            window.ClientJs.goToFundInfo()
+        }else if(isIOS==true){
+            window.webkit.messageHandlers.pushInfoViewController.postMessage({body: 'hello world!'});
+        }else{
+            alert('不是安卓，也不是ios')
+
+        }
+
+
+
+    })
+
+
+    //基金经理-点击
+    $('.fund_manager_box').click(function(){
+
+        if(isAndroid==true){
+
+            window.ClientJs.goToFundManager()
+        }else if(isIOS==true){
+            window.webkit.messageHandlers.pushManagerViewController.postMessage({body: 'hello world!'});
+        }else{
+            alert('不是安卓，也不是ios')
+
+        }
+
+
+
+    })
+
+
+    //立即投资按钮点击
+    $('.trueBtn').click(function(){
+        var fundInfo ={riskLevel:localStorage.getItem('riskLevel'),fundType:localStorage.getItem('fundType'),fundName:localStorage.getItem('fundName'),fundCode:localStorage.getItem('fundCode'),dealType:1}
+
+        if(isAndroid==true){
+
+            window.ClientJs.investNow(JSON.stringify(fundInfo))
+        }else if(isIOS==true){
+            window.webkit.messageHandlers.pushDealProcessViewController.postMessage(fundInfo);
+        }else{
+            alert('不是安卓，也不是ios,操作无效')
+
+        }
+    })
+
+
+    //获取数组的，第一项，中间项，和最后一项
+    function ArrOption(arr) {
+        var lastNum = parseInt(arr.length-1)
+        var centerNum = parseInt(arr.length/2).toFixed(0)
+        var firstData = arr[0]
+        var centerData = arr[centerNum]
+        var lastData = arr[lastNum]
+        return [firstData,centerData,lastData]
+
+    }
+
+
+
+
+
+    //加载页面信息
+    NDchart(fundCode,'last_month_increas')
+
+
+
+    function NDchart(fundCode,period){
+
+        //ajax调数据
+        $.ajax({
+            url:'http://api.beta.walrus.tech/hx-fund/fundInfo/fundDetail',//online
+            type: "POST",   //请求方式
+            dataType: "json",   //返回格式为json
+            data:{fundCode:fundCode,cycle:period},
+            success: function(JSON) {
+
+
+
+                if(JSON.code==0){
+
+                    //基金类型 ， 风险等级
+                    $('.fund_type .title span').text(JSON.data.fundType)
+                    $('.fund_type .val span').text(JSON.data.riskLevel)
+                    //七日年化 万份收益
+                    $('.fund_day .val').text(JSON.data.sevenIncome+'%')
+                    $('.fund_net .val').text(JSON.data.netValue);
+
+
+                    localStorage.setItem('riskLevel',JSON.data.fundType)
+                    localStorage.setItem('fundType',JSON.data.riskLevel)
+                    localStorage.setItem('fundName',JSON.data.fundName)
+                    localStorage.setItem('fundCode',JSON.data.fundCode)
+
+
+                    //日期
+                    var DateList=[]
+                    //七日年化
+                    var sevenData=[]
+                    //万份收益
+                    var tenThousandData=[]
+
+                    for(var i=0;i<JSON.data.fundIncomeList.length;i++){
+
+                        //日期
+                        DateList.unshift(JSON.data.fundIncomeList[i].getDate)
+                        //七日年化
+                        sevenData.unshift(JSON.data.fundIncomeList[i].sevenValue)
+                        //万份收益
+                        tenThousandData.unshift(JSON.data.fundIncomeList[i].tenThousandValue)
+                    }
+                    console.log(DateList)
+                    console.log(sevenData)
+                    console.log(tenThousandData)
+
+                    //x轴显示的日期
+                    var arrOne = ArrOption(DateList)[0]
+                    var arrTwo = ArrOption(DateList)[1]
+                    var arrThree = ArrOption(DateList)[2]
+
+                    $('.valTime').text(arrThree.substring(5))
+
+                    $('.main_timeX .first').text(arrOne)
+                    $('.main_timeX .center').text(arrTwo)
+                    $('.main_timeX .last').text(arrThree)
+
+
+
+
+                    //七日年化
+                    var elements = "main"
+                    var legendData = ['本基金:1.28']
+                    var xAxisData = DateList
+                    var SeriesData = [
+                        {
+                            name: '本基金',
+                            itemStyle:{
+                                normal:{
+                                    lineStyle:{
+                                        color:"#FCB743"
+                                    }
+                                }
+                            },
+                            type: 'line',
+                            stack: '总量',
+                            showSymbol: false,
+                            symbolSize: 1,
+                            data: sevenData
+                        }
+
+                    ]
+
+                    mychart(elements, legendData, xAxisData, SeriesData,'%')
+
+
+                    //万份收益
+
+                    var elements2 = "main2"
+                    var legendData2 = ['本基金:']
+                    var xAxisData2 = DateList
+                    var SeriesData2 = [
+
+                        {
+                            name: '本基金',
+                            type: 'line',
+                            stack: '总量',
+                            itemStyle:{
+                                normal:{
+                                    lineStyle:{
+                                        color:"#3D89F9"
+                                    }
+                                }
+                            },
+                            showSymbol: false,
+                            symbolSize: 1,
+                            data: tenThousandData
+                        }
+                    ]
+
+
+                    mychart(elements2, legendData2, xAxisData2, SeriesData2,'')
+
+
+
+                }
+
+
+            },
+            error:function(e){
+                console.log(e)
+                alert(e)
+            }
+        });
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    $(function() {
+
+        //锁,开启状态
+        var lock = true;
+
+        // tab栏切换
+        $('#tabs a').click(function(e) {
+
+
+            if (lock) {
+
+                e.preventDefault();
+                $('#tabs li').removeClass("current").removeClass("hoverItem");
+                $(this).parent().addClass("current");
+                $("#content div").removeClass("show");
+                $('#' + $(this).attr('title')).addClass('show');
+
+                //过河拆桥,关闭锁
+                lock = false;
+
+                //0.5秒后，重新修个桥,开启锁
+                setTimeout(function() {
+                    lock = true;
+                }, 500);
+
+            }
+
+        });
+
+
+
+        //锁,开启状态
+        var lock2 = true;
+
+        //走势图时间区间选择
+        $('.main_time span').click(function() {
+
+            var index=$(this).index()
+
+            if (lock2) {
+
+                if ($(this).hasClass('cur')) {
+
+                } else {
+
+                    $('#tab2 .main_time span ').eq(index).addClass('cur').siblings('span').removeClass('cur');
+                    $('#tab1 .main_time span ').eq(index).addClass('cur').siblings('span').removeClass('cur');
+
+
+                    if($(this).text()=='近一个月'){
+                        NDchart(fundCode,'last_month_increas')
+                    }else if($(this).text()=='近三个月'){
+                        NDchart(fundCode,'last_three_month_increas')
+                    }else if($(this).text()=='近六个月'){
+                        NDchart(fundCode,'last_half_year_increas')
+                    }else if($(this).text()=='近一年'){
+                        NDchart(fundCode,'last_year_increas')
+                    }
+
+                }
+
+                //过河拆桥,关闭锁
+                lock2 = false;
+
+                //0.5秒后，重新修个桥,开启锁
+                setTimeout(function() {
+                    lock2 = true;
+                }, 500);
+
+
+
+            }
+
+
+        })
+
+
+
+
+    });
+
+
+
+    var timeOutEvent=0;
+    $(function(){
+        $("#main,#main2").on({
+            touchstart: function(e){
+                timeOutEvent = setTimeout("longPress()",500);
+                e.preventDefault();
+            },
+            touchmove: function(){
+                clearTimeout(timeOutEvent);
+                timeOutEvent = 0;
+            },
+            touchend: function(){
+                clearTimeout(timeOutEvent);
+                if(timeOutEvent!=0){
+//                    alert("你这是点击，不是长按");
+                }
+                return false;
+            }
+        })
+    });
+
+
+    function longPress(){
+        timeOutEvent = 0;
+//        alert("长按事件触发发");
+    }
+
+
+
+
+
+
+</script>
